@@ -239,9 +239,9 @@
                     <div class="input-group">
                         <label for="situacaoFilter">Situação</label>
                         <select id="situacaoFilter">
-                            <option value="EM USO" selected>EM USO</option>
+                            <option value="TODOS" selected>TODOS</option>
+                            <option value="EM USO">EM USO</option>
                             <option value="EM REGRAVAÇÃO">EM REGRAVAÇÃO</option>
-                            <option value="TODOS">TODOS</option>
                         </select>
                     </div>
                 </div>
@@ -251,12 +251,12 @@
                     <thead>
                         <tr>
                             <th onclick="render.sortTable('id')">Nº<span class="sort-indicator"></span></th>
-                            <th>Situação</th>
                             <th onclick="render.sortTable('bcm_original')">BCM Original<span class="sort-indicator"></span></th>
                             <th onclick="render.sortTable('bcm_atual')">BCM Atual<span class="sort-indicator"></span></th>
                             <th onclick="render.sortTable('vida_util')">% Vida Útil<span class="sort-indicator"></span></th>
                             <th onclick="render.sortTable('lineatura')">Lineatura<span class="sort-indicator"></span></th>
                             <th style="width: 25%;">Estado Detalhado</th>
+                            <th>Situação</th>
                             <th onclick="render.sortTable('ultima_atividade')">Últ. Atividade<span class="sort-indicator"></span></th>
                             <th>Status Volume</th>
                             <th>Status Limpeza</th>
@@ -576,11 +576,11 @@
                     const row = document.createElement('tr');
                     row.innerHTML = `
                         <td><strong>${anilox.id}</strong></td>
-                        <td><button class="situacao-badge ${situacaoClass}" onclick="toggleSituacao('${anilox.id}')">${situacao}</button></td>
                         <td>${anilox.bcm_original.toFixed(1)}</td>
                         <td>${typeof latestMeasurement.bcmAtual === 'number' ? latestMeasurement.bcmAtual.toFixed(1) : 'N/A'}</td>
                         <td>${!isNaN(life) ? life.toFixed(1) + '%' : 'N/A'}</td> <td>${anilox.lineatura}</td>
                         <td class="estado-cell">${estadoHtml}</td>
+                        <td><button class="situacao-badge ${situacaoClass}" onclick="toggleSituacao('${anilox.id}')">${situacao}</button></td>
                         <td>${lastActivityDateFormatted}</td> <td>${volStatusBadge}</td> <td>${washStatusBadge}</td>
                         <td>
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin-bottom: 4px;">
