@@ -309,6 +309,7 @@
             fetchAniloxData: async () => (await supabaseClient.from('anilox').select('*')).data || [],
             updateAniloxRecord: async (id, data) => (await supabaseClient.from('anilox').update(data).eq('id', id).select()).data,
             addAniloxRecord: async (anilox) => (await supabaseClient.from('anilox').insert(anilox).select()).data,
+            deleteAniloxRecord: async (id) => await supabaseClient.from('anilox').delete().eq('id', id),
             fetchSettings: async () => ((await supabaseClient.from('settings').select('config').eq('id', 1).single()).data?.config) || defaultSettings,
             saveSettings: async (config) => await supabaseClient.from('settings').upsert({ id: 1, config }),
             resetAllData: async () => {
@@ -557,10 +558,11 @@
                                 <button class="btn-small" style="background-color: var(--success);" onclick="openWashModal('${anilox.id}')">Lavar</button>
                                 <button class="btn-small" style="background-color: var(--primary);" onclick="openMeasurementModal('${anilox.id}')">Medir</button>
                             </div>
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px;">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin-bottom: 4px;">
                                 <button class="btn-small" onclick="openEditModal('${anilox.id}')">Estado</button>
                                 <button class="btn-small" style="background-color: var(--text-light);" onclick="showChart('${anilox.id}')">Histórico</button>
                             </div>
+                            <button class="btn-small btn-danger" onclick="deleteAnilox('${anilox.id}')">Excluir</button>
                         </td>`;
                     tableBody.appendChild(row);
                 });
@@ -608,6 +610,20 @@
             document.getElementById('chartModalTitle').innerText = `Histórico de Volume do Anilox Nº ${anilox.id}`;
             render.createChart('aniloxChart', 'line', sortedHistory.map(h => new Date(h.data + 'T12:00:00Z').toLocaleDateString('pt-BR', {timeZone: 'UTC'})), datasets);
             ui.openModal('chartModal');
+        }
+
+        async function deleteAnilox(id) {
+            if (confirm(`Tem certeza que deseja excluir o Anilox Nº ${id}? Esta ação não pode ser desfeita.`)) {
+                try {
+                    await db.deleteAniloxRecord(id);
+                    aniloxData = aniloxData.filter(a => a.id !== id);
+                    render.all();
+                    ui.showToast('Anilox excluído com sucesso!');
+                } catch (error) {
+                    console.error("Erro ao excluir anilox:", error);
+                    ui.showToast(error.message || 'Erro ao excluir o anilox.', 'error');
+                }
+            }
         }
 
         function generateComprehensiveReport() {
@@ -715,6 +731,7 @@
             window.showTab = ui.showTab; window.openModal = ui.openModal; window.closeModal = ui.closeModal;
             window.openWashModal = openWashModal; window.openMeasurementModal = openMeasurementModal;
             window.openEditModal = openEditModal; window.showChart = showChart; window.generateComprehensiveReport = generateComprehensiveReport;
+            window.deleteAnilox = deleteAnilox;
 
             // --- Event Listeners ---
             document.getElementById('searchInput').addEventListener('input', render.table);
