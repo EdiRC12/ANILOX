@@ -26,7 +26,7 @@ app.get('/', async (c) => {
 // This will handle images like anilox.webp, anilox.jfif, etc.
 app.use('/*', serveStatic({ root: './' }))
 
-const port = 3000
+const port = process.env.PORT || 3000
 console.log(`
 🚀 Server is running!
 🔗 Access the app at: http://localhost:${port}
@@ -34,5 +34,6 @@ console.log(`
 
 serve({
   fetch: app.fetch,
-  port
+  port,
+  hostname: '0.0.0.0'
 })
