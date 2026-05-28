@@ -131,6 +131,15 @@
         .status-badge.status-atencao { background-color: var(--warning); color: var(--text-dark); }
         .status-badge.status-critico { background-color: var(--danger); }
         .status-badge.status-na { background-color: var(--text-light); }
+        .situacao-badge {
+            padding: 6px 12px; border-radius: 12px; font-size: 0.75rem;
+            font-weight: 700; cursor: pointer; border: none; text-transform: uppercase;
+            font-family: var(--font-primary); letter-spacing: 0.5px;
+            transition: all 0.2s ease; display: inline-block;
+        }
+        .situacao-badge:hover { transform: scale(1.05); box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+        .situacao-badge.em-uso { background-color: var(--success); color: var(--text-white); }
+        .situacao-badge.em-regravacao { background-color: #8b5cf6; color: var(--text-white); }
 
         .modal-overlay {
             display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%;
@@ -222,9 +231,19 @@
         <div id="aniloxTab" class="tab-content">
             <h2>Lista de Anilox</h2>
             <div class="controls-section" style="padding: 15px; margin-bottom: 15px; background-color: #fff;">
-                <div class="input-group">
-                    <label for="searchInput">Pesquisar Anilox (por Nº)</label>
-                    <input type="text" id="searchInput" placeholder="Digite o número do anilox para filtrar...">
+                <div class="controls-grid" style="grid-template-columns: 1fr 200px;">
+                    <div class="input-group">
+                        <label for="searchInput">Pesquisar Anilox (por Nº)</label>
+                        <input type="text" id="searchInput" placeholder="Digite o número do anilox para filtrar...">
+                    </div>
+                    <div class="input-group">
+                        <label for="situacaoFilter">Situação</label>
+                        <select id="situacaoFilter">
+                            <option value="EM USO" selected>EM USO</option>
+                            <option value="EM REGRAVAÇÃO">EM REGRAVAÇÃO</option>
+                            <option value="TODOS">TODOS</option>
+                        </select>
+                    </div>
                 </div>
             </div>
             <div class="table-container">
@@ -232,11 +251,12 @@
                     <thead>
                         <tr>
                             <th onclick="render.sortTable('id')">Nº<span class="sort-indicator"></span></th>
+                            <th>Situação</th>
                             <th onclick="render.sortTable('bcm_original')">BCM Original<span class="sort-indicator"></span></th>
                             <th onclick="render.sortTable('bcm_atual')">BCM Atual<span class="sort-indicator"></span></th>
                             <th onclick="render.sortTable('vida_util')">% Vida Útil<span class="sort-indicator"></span></th>
                             <th onclick="render.sortTable('lineatura')">Lineatura<span class="sort-indicator"></span></th>
-                            <th style="width: 30%;">Estado Detalhado</th>
+                            <th style="width: 25%;">Estado Detalhado</th>
                             <th onclick="render.sortTable('ultima_atividade')">Últ. Atividade<span class="sort-indicator"></span></th>
                             <th>Status Volume</th>
                             <th>Status Limpeza</th>
@@ -473,13 +493,18 @@
             table: () => {
                 const tableBody = document.getElementById('aniloxTableBody');
                 const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
+                const situacaoFilter = document.getElementById('situacaoFilter').value;
 
-                const filteredData = searchTerm
-                    ? aniloxData.filter(a => a.id.toLowerCase().includes(searchTerm))
-                    : [...aniloxData];
+                let filteredData = [...aniloxData];
+                if (situacaoFilter !== 'TODOS') {
+                    filteredData = filteredData.filter(a => (a.situacao || 'EM USO') === situacaoFilter);
+                }
+                if (searchTerm) {
+                    filteredData = filteredData.filter(a => a.id.toLowerCase().includes(searchTerm));
+                }
 
                 if (filteredData.length === 0) {
-                    tableBody.innerHTML = `<tr><td colspan="10" class="placeholder">${searchTerm ? 'Nenhum anilox encontrado.' : 'Nenhum anilox cadastrado.'}</td></tr>`;
+                    tableBody.innerHTML = `<tr><td colspan="11" class="placeholder">${searchTerm || situacaoFilter !== 'TODOS' ? 'Nenhum anilox encontrado para este filtro.' : 'Nenhum anilox cadastrado.'}</td></tr>`;
                     return;
                 }
 
@@ -546,9 +571,13 @@
                     if (anilox.observacoes_gerais) estadoHtml += `<div><strong>Obs:</strong> ${anilox.observacoes_gerais}</div>`;
                     if (!estadoHtml) estadoHtml = 'N/A';
 
+                    const situacao = anilox.situacao || 'EM USO';
+                    const situacaoClass = situacao === 'EM USO' ? 'em-uso' : 'em-regravacao';
                     const row = document.createElement('tr');
                     row.innerHTML = `
-                        <td><strong>${anilox.id}</strong></td> <td>${anilox.bcm_original.toFixed(1)}</td>
+                        <td><strong>${anilox.id}</strong></td>
+                        <td><button class="situacao-badge ${situacaoClass}" onclick="toggleSituacao('${anilox.id}')">${situacao}</button></td>
+                        <td>${anilox.bcm_original.toFixed(1)}</td>
                         <td>${typeof latestMeasurement.bcmAtual === 'number' ? latestMeasurement.bcmAtual.toFixed(1) : 'N/A'}</td>
                         <td>${!isNaN(life) ? life.toFixed(1) + '%' : 'N/A'}</td> <td>${anilox.lineatura}</td>
                         <td class="estado-cell">${estadoHtml}</td>
@@ -623,6 +652,22 @@
                     console.error("Erro ao excluir anilox:", error);
                     ui.showToast(error.message || 'Erro ao excluir o anilox.', 'error');
                 }
+            }
+        }
+
+        async function toggleSituacao(id) {
+            const anilox = aniloxData.find(a => a.id === id);
+            if (!anilox) return;
+            const currentSituacao = anilox.situacao || 'EM USO';
+            const newSituacao = currentSituacao === 'EM USO' ? 'EM REGRAVAÇÃO' : 'EM USO';
+            try {
+                await db.updateAniloxRecord(id, { situacao: newSituacao });
+                anilox.situacao = newSituacao;
+                render.all();
+                ui.showToast(`Anilox Nº ${id} alterado para ${newSituacao}`);
+            } catch (error) {
+                console.error('Erro ao alterar situação:', error);
+                ui.showToast('Erro ao alterar situação.', 'error');
             }
         }
 
@@ -732,9 +777,11 @@
             window.openWashModal = openWashModal; window.openMeasurementModal = openMeasurementModal;
             window.openEditModal = openEditModal; window.showChart = showChart; window.generateComprehensiveReport = generateComprehensiveReport;
             window.deleteAnilox = deleteAnilox;
+            window.toggleSituacao = toggleSituacao;
 
             // --- Event Listeners ---
             document.getElementById('searchInput').addEventListener('input', render.table);
+            document.getElementById('situacaoFilter').addEventListener('change', render.table);
 
             document.getElementById('saveSettingsBtn').addEventListener('click', (e) => ui.handleFormSubmit(e.currentTarget, async () => {
                 const newSettings = {
@@ -798,6 +845,7 @@
                         lineatura: document.getElementById('newLineatura').value.trim(),
                         historico: [{ data: document.getElementById('newMeasurementDate').value, bcmAtual: parseFloat(document.getElementById('newBcmAtual').value) }],
                         lavagens: [],
+                        situacao: 'EM USO',
                         riscos_ld: document.getElementById('newRiscosLD').value.trim(),
                         riscos_le: document.getElementById('newRiscosLE').value.trim(),
                         batidas_ld: document.getElementById('newBatidasLD').value.trim(),
