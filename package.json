@@ -1,0 +1,29 @@
+{
+  "name": "anilox",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/EdiRC12/ANILOX.git"
+  },
+  "keywords": [],
+  "author": "",
+  "bugs": {
+    "url": "https://github.com/EdiRC12/ANILOX/issues"
+  },
+  "homepage": "https://github.com/EdiRC12/ANILOX#readme",
+  "dependencies": {
+    "@hono/node-server": "^2.0.1",
+    "@supabase/supabase-js": "^2.105.3",
+    "hono": "^4.12.17"
+  },
+  "devDependencies": {
+    "supabase": "^2.98.2"
+  }
+}
