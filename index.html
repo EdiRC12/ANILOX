@@ -25,12 +25,12 @@
         html { font-size: 16px; scroll-behavior: smooth; }
         body {
             font-family: var(--font-primary); line-height: 1.6; color: var(--text-dark);
-            background-color: var(--bg-light); padding: 20px;
+            background-color: var(--bg-light); padding: 10px;
             -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
         }
         .main-container {
-            max-width: 1600px; margin: 10px auto; background-color: var(--bg-card);
-            padding: 30px 40px; border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--card-shadow);
+            max-width: 100%; margin: 0 auto; background-color: var(--bg-card);
+            padding: 20px 24px; border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--card-shadow);
         }
         .header {
             display: flex; justify-content: space-between; align-items: center;
@@ -103,43 +103,72 @@
 
         .table-container {
             overflow-x: auto; border: 1px solid var(--border); border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-top: 20px; max-height: 70vh;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-top: 12px; max-height: 75vh;
         }
-        table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
         th, td {
-            padding: 12px 15px; text-align: center; font-family: var(--font-mono);
+            padding: 8px 10px; text-align: center; font-family: var(--font-mono);
             vertical-align: middle; border-bottom: 1px solid var(--border);
         }
         th {
-            background-color: var(--bg-light); color: var(--text-dark); font-weight: 600;
+            background-color: #eef2f7; color: var(--text-dark); font-weight: 600;
             font-family: var(--font-primary); text-transform: uppercase; letter-spacing: 0.5px;
-            font-size: 0.75rem; position: sticky; top: 0; z-index: 1; cursor: pointer;
+            font-size: 0.7rem; position: sticky; top: 0; z-index: 2; cursor: pointer;
         }
-        th .sort-indicator { display: inline-block; margin-left: 8px; opacity: 0.7; width: 1em; }
+        th .sort-indicator { display: inline-block; margin-left: 4px; opacity: 0.7; width: 1em; }
+        tr:hover { background-color: #f8fafd; }
         .estado-cell {
-            max-width: 350px; white-space: pre-wrap; text-align: left; font-size: 0.8rem;
-            line-height: 1.5;
+            max-width: 250px; white-space: pre-wrap; text-align: left; font-size: 0.75rem;
+            line-height: 1.4;
         }
-        .estado-cell strong { color: var(--primary); }
+        .estado-cell strong { color: #555; font-weight: 600; }
+
+        /* Dropdown menu for actions */
+        .action-wrapper { position: relative; display: inline-block; }
+        .action-toggle {
+            background: none; border: 1px solid var(--border); color: var(--text-dark);
+            padding: 6px 10px; border-radius: 6px; cursor: pointer; font-size: 1.1rem;
+            line-height: 1; box-shadow: none; letter-spacing: 0; text-transform: none;
+            transition: background 0.15s ease;
+        }
+        .action-toggle:hover { background-color: var(--bg-light); transform: none; box-shadow: none; }
+        .action-dropdown {
+            display: none; position: absolute; right: 0; top: 100%; margin-top: 4px;
+            background: #fff; border: 1px solid var(--border); border-radius: 8px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12); z-index: 50; min-width: 160px;
+            padding: 6px 0; animation: fadeIn 0.15s ease;
+        }
+        .action-dropdown.open { display: block; }
+        .action-item {
+            display: flex; align-items: center; gap: 10px; padding: 9px 16px;
+            cursor: pointer; font-size: 0.82rem; font-family: var(--font-primary);
+            color: var(--text-dark); border: none; background: none; width: 100%;
+            text-align: left; font-weight: 500; text-transform: none; letter-spacing: 0;
+            box-shadow: none; border-radius: 0;
+        }
+        .action-item:hover { background-color: var(--bg-light); transform: none; box-shadow: none; }
+        .action-item.danger { color: var(--danger); }
+        .action-item.danger:hover { background-color: #fff0f0; }
+        .action-divider { height: 1px; background: var(--border); margin: 4px 0; }
 
         .status-badge {
-            padding: 4px 10px; border-radius: 12px; font-size: 0.75rem;
+            padding: 3px 8px; border-radius: 10px; font-size: 0.7rem;
             font-weight: 600; color: var(--text-white); font-family: var(--font-primary);
-            text-transform: uppercase;
+            text-transform: uppercase; white-space: nowrap;
         }
-        .status-badge.status-ok { background-color: var(--success); }
-        .status-badge.status-atencao { background-color: var(--warning); color: var(--text-dark); }
-        .status-badge.status-critico { background-color: var(--danger); }
-        .status-badge.status-na { background-color: var(--text-light); }
+        .status-badge.status-ok { background-color: #d1fae5; color: #065f46; }
+        .status-badge.status-atencao { background-color: #fef3c7; color: #92400e; }
+        .status-badge.status-critico { background-color: #fee2e2; color: #991b1b; }
+        .status-badge.status-na { background-color: #f3f4f6; color: #6b7280; }
         .situacao-badge {
-            padding: 6px 12px; border-radius: 12px; font-size: 0.75rem;
-            font-weight: 700; cursor: pointer; border: none; text-transform: uppercase;
-            font-family: var(--font-primary); letter-spacing: 0.5px;
-            transition: all 0.2s ease; display: inline-block;
+            padding: 4px 10px; border-radius: 10px; font-size: 0.7rem;
+            font-weight: 600; cursor: pointer; border: none; text-transform: uppercase;
+            font-family: var(--font-primary); letter-spacing: 0.3px;
+            transition: all 0.15s ease; display: inline-block;
         }
-        .situacao-badge:hover { transform: scale(1.05); box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
-        .situacao-badge.em-uso { background-color: var(--success); color: var(--text-white); }
-        .situacao-badge.em-regravacao { background-color: #8b5cf6; color: var(--text-white); }
+        .situacao-badge:hover { transform: scale(1.03); box-shadow: 0 1px 4px rgba(0,0,0,0.15); }
+        .situacao-badge.em-uso { background-color: #d1fae5; color: #065f46; }
+        .situacao-badge.em-regravacao { background-color: #ede9fe; color: #5b21b6; }
 
         .modal-overlay {
             display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%;
@@ -641,19 +670,21 @@
                         <td>${!isNaN(life) ? life.toFixed(1) + '%' : 'N/A'}</td> <td>${anilox.lineatura}</td>
                         <td class="estado-cell">${estadoHtml}</td>
                         <td><button class="situacao-badge ${situacaoClass}" onclick="toggleSituacao('${anilox.id}')">${situacao}</button></td>
-                        <td><a href="#" onclick="event.preventDefault(); showWashHistory('${anilox.id}')" style="font-weight:700; color: var(--primary); text-decoration: none; cursor: pointer;" title="Clique para ver todas as lavagens">${washCountInPeriod} <span style="font-size:0.7rem; color: var(--text-light);">(${totalWashCount} total)</span></a></td>
-                        <td style="font-weight:700;">${measurementCountInPeriod}</td>
+                        <td><a href="#" onclick="event.preventDefault(); showWashHistory('${anilox.id}')" style="font-weight:600; color: var(--primary); text-decoration: none; cursor: pointer;" title="Ver todas as lavagens">${washCountInPeriod} <span style="font-size:0.65rem; color: var(--text-light);">(${totalWashCount})</span></a></td>
+                        <td style="font-weight:600;">${measurementCountInPeriod}</td>
                         <td>${lastActivityDateFormatted}</td> <td>${volStatusBadge}</td> <td>${washStatusBadge}</td>
                         <td>
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin-bottom: 4px;">
-                                <button class="btn-small" style="background-color: var(--success);" onclick="openWashModal('${anilox.id}')">Lavar</button>
-                                <button class="btn-small" style="background-color: var(--primary);" onclick="openMeasurementModal('${anilox.id}')">Medir</button>
+                            <div class="action-wrapper">
+                                <button class="action-toggle" onclick="toggleActionMenu(event, '${anilox.id}')" title="Ações">⋮</button>
+                                <div class="action-dropdown" id="menu-${anilox.id}">
+                                    <button class="action-item" onclick="openWashModal('${anilox.id}'); closeAllMenus();">💧 Registrar Lavagem</button>
+                                    <button class="action-item" onclick="openMeasurementModal('${anilox.id}'); closeAllMenus();">📐 Nova Medição</button>
+                                    <button class="action-item" onclick="openEditModal('${anilox.id}'); closeAllMenus();">📋 Editar Estado</button>
+                                    <button class="action-item" onclick="showChart('${anilox.id}'); closeAllMenus();">📊 Ver Histórico</button>
+                                    <div class="action-divider"></div>
+                                    <button class="action-item danger" onclick="deleteAnilox('${anilox.id}'); closeAllMenus();">🗑️ Excluir</button>
+                                </div>
                             </div>
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin-bottom: 4px;">
-                                <button class="btn-small" onclick="openEditModal('${anilox.id}')">Estado</button>
-                                <button class="btn-small" style="background-color: var(--text-light);" onclick="showChart('${anilox.id}')">Histórico</button>
-                            </div>
-                            <button class="btn-small btn-danger" onclick="deleteAnilox('${anilox.id}')">Excluir</button>
                         </td>`;
                     tableBody.appendChild(row);
                 });
@@ -661,10 +692,23 @@
         };
 
         function openWashModal(id) {
+            closeAllMenus();
             document.getElementById('washAniloxId').value = id;
             document.getElementById('modalWashAniloxId').textContent = id;
             document.getElementById('washDate').valueAsDate = new Date();
             ui.openModal('addWashModal');
+        }
+
+        function toggleActionMenu(event, id) {
+            event.stopPropagation();
+            const menu = document.getElementById('menu-' + id);
+            const wasOpen = menu.classList.contains('open');
+            closeAllMenus();
+            if (!wasOpen) menu.classList.add('open');
+        }
+
+        function closeAllMenus() {
+            document.querySelectorAll('.action-dropdown.open').forEach(m => m.classList.remove('open'));
         }
 
         function openMeasurementModal(id) {
@@ -867,6 +911,13 @@
             window.toggleSituacao = toggleSituacao;
             window.printReport = printReport;
             window.showWashHistory = showWashHistory;
+            window.toggleActionMenu = toggleActionMenu;
+            window.closeAllMenus = closeAllMenus;
+
+            // Close dropdown on click outside
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('.action-wrapper')) closeAllMenus();
+            });
 
             // --- Event Listeners ---
             document.getElementById('searchInput').addEventListener('input', render.table);
