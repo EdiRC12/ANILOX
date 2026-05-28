@@ -450,6 +450,8 @@
                 });
 
                 const avgLife = measuredCount > 0 ? (totalLife / measuredCount).toFixed(1) : 'N/A';
+                const emUsoCount = aniloxData.filter(a => (a.situacao || 'EM USO') === 'EM USO').length;
+                const emRegravacaoCount = aniloxData.filter(a => (a.situacao || 'EM USO') === 'EM REGRAVAÇÃO').length;
                 
                 let weeklyProgressHTML = '';
                 dayLabels.forEach(({ dateString, label }) => {
@@ -466,6 +468,12 @@
                 grid.innerHTML = `
                     <div class="kpi-card" style="border-color: var(--primary);">
                         <div class="value">${aniloxData.length}</div><div class="label">Total de Anilox</div>
+                    </div>
+                    <div class="kpi-card" style="border-color: var(--success);">
+                        <div class="value">${emUsoCount}</div><div class="label">Em Uso</div>
+                    </div>
+                    <div class="kpi-card" style="border-color: #8b5cf6;">
+                        <div class="value">${emRegravacaoCount}</div><div class="label">Em Regravação</div>
                     </div>
                     <div class="kpi-card" style="border-color: var(--success);">
                         <div class="value">${avgLife}%</div><div class="label">Vida Útil Média</div>
