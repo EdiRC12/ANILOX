@@ -204,6 +204,31 @@
         }
         .day-progress.goal-met { color: var(--success); }
         .day-progress.goal-not-met { color: var(--secondary); }
+
+        .btn-print {
+            background-color: #6366f1; display: inline-flex; align-items: center; gap: 8px;
+        }
+        .btn-print:hover:not(:disabled) { background-color: #4f46e5; }
+        .print-header { display: none; }
+
+        @media print {
+            body { padding: 0; background: #fff; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .header, .nav-tabs, .controls-section, #dashboardTab, #aniloxTab, #settingsTab,
+            #toast-container, .modal-overlay, button:not(.no-hide-print) { display: none !important; }
+            .main-container { border: none; box-shadow: none; padding: 0; max-width: 100%; }
+            #reportTab { display: block !important; }
+            #reportTab > h2 { display: none; }
+            .print-header {
+                display: flex !important; align-items: center; gap: 15px;
+                margin-bottom: 20px; padding-bottom: 15px; border-bottom: 3px solid var(--primary);
+            }
+            .print-header h1 { font-size: 1.4rem; color: var(--primary); }
+            .print-header .print-period { font-size: 0.95rem; color: var(--text-light); }
+            .table-container { max-height: none !important; overflow: visible !important; border: none; box-shadow: none; }
+            table { font-size: 0.8rem; }
+            th, td { padding: 8px 10px; }
+            th { background-color: #f0f0f0 !important; }
+        }
     </style>
 </head>
 <body>
@@ -270,7 +295,7 @@
 
         <div id="reportTab" class="tab-content">
             <h2>Relatório de Performance por Período</h2>
-            <div class="controls-section">
+            <div class="controls-section" id="reportControls">
                 <div class="controls-grid">
                     <div class="input-group">
                         <label for="startDate">Data de Início</label>
@@ -281,6 +306,13 @@
                         <input type="date" id="endDate">
                     </div>
                     <button onclick="generateComprehensiveReport()">Gerar Análise</button>
+                    <button class="btn-print" id="printReportBtn" onclick="printReport()" style="display: none;">🖨️ Imprimir / PDF</button>
+                </div>
+            </div>
+            <div class="print-header" id="printHeader">
+                <div>
+                    <h1>Gestão de Anilox — Relatório de Performance</h1>
+                    <div class="print-period" id="printPeriod"></div>
                 </div>
             </div>
             <div id="reportResults">
@@ -726,6 +758,12 @@
                 </tr>`;
             });
             resultsDiv.innerHTML += tableHTML + `</tbody></table></div>`;
+            document.getElementById('printReportBtn').style.display = 'inline-flex';
+            document.getElementById('printPeriod').textContent = `Período: ${startUTC.toLocaleDateString('pt-BR', {timeZone: 'UTC'})} a ${endUTC.toLocaleDateString('pt-BR', {timeZone: 'UTC'})}`;
+        }
+
+        function printReport() {
+            window.print();
         }
 
         async function initializeApp() {
@@ -786,6 +824,7 @@
             window.openEditModal = openEditModal; window.showChart = showChart; window.generateComprehensiveReport = generateComprehensiveReport;
             window.deleteAnilox = deleteAnilox;
             window.toggleSituacao = toggleSituacao;
+            window.printReport = printReport;
 
             // --- Event Listeners ---
             document.getElementById('searchInput').addEventListener('input', render.table);
