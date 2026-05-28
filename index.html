@@ -256,7 +256,7 @@
         <div id="aniloxTab" class="tab-content">
             <h2>Lista de Anilox</h2>
             <div class="controls-section" style="padding: 15px; margin-bottom: 15px; background-color: #fff;">
-                <div class="controls-grid" style="grid-template-columns: 1fr 200px;">
+                <div class="controls-grid" style="grid-template-columns: 1fr 200px 200px;">
                     <div class="input-group">
                         <label for="searchInput">Pesquisar Anilox (por Nº)</label>
                         <input type="text" id="searchInput" placeholder="Digite o número do anilox para filtrar...">
@@ -267,6 +267,14 @@
                             <option value="TODOS" selected>TODOS</option>
                             <option value="EM USO">EM USO</option>
                             <option value="EM REGRAVAÇÃO">EM REGRAVAÇÃO</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label for="periodFilter">Período (Lavagens/Medições)</label>
+                        <select id="periodFilter">
+                            <option value="7" selected>Semana</option>
+                            <option value="30">Mês</option>
+                            <option value="365">Ano</option>
                         </select>
                     </div>
                 </div>
@@ -282,6 +290,8 @@
                             <th onclick="render.sortTable('lineatura')">Lineatura<span class="sort-indicator"></span></th>
                             <th style="width: 25%;">Estado Detalhado</th>
                             <th>Situação</th>
+                            <th>Lavagens</th>
+                            <th>Medições</th>
                             <th onclick="render.sortTable('ultima_atividade')">Últ. Atividade<span class="sort-indicator"></span></th>
                             <th>Status Volume</th>
                             <th>Status Limpeza</th>
@@ -344,6 +354,7 @@
     <div id="chartModal" class="modal-overlay"></div>
     <div id="addWashModal" class="modal-overlay"></div>
     <div id="editAniloxModal" class="modal-overlay"></div>
+    <div id="washHistoryModal" class="modal-overlay"></div>
 
     <script>
         const SUPABASE_URL = 'https://mngqdfgtrzwghtuwzhzc.supabase.co';
@@ -544,7 +555,7 @@
                 }
 
                 if (filteredData.length === 0) {
-                    tableBody.innerHTML = `<tr><td colspan="11" class="placeholder">${searchTerm || situacaoFilter !== 'TODOS' ? 'Nenhum anilox encontrado para este filtro.' : 'Nenhum anilox cadastrado.'}</td></tr>`;
+                    tableBody.innerHTML = `<tr><td colspan="13" class="placeholder">${searchTerm || situacaoFilter !== 'TODOS' ? 'Nenhum anilox encontrado para este filtro.' : 'Nenhum anilox cadastrado.'}</td></tr>`;
                     return;
                 }
 
@@ -577,6 +588,9 @@
 
                 const today = new Date();
                 today.setHours(0, 0, 0, 0);
+                const periodDays = parseInt(document.getElementById('periodFilter').value, 10);
+                const periodStart = new Date(today);
+                periodStart.setDate(today.getDate() - periodDays);
                 tableBody.innerHTML = '';
 
                 sortedData.forEach(anilox => {
@@ -613,6 +627,12 @@
 
                     const situacao = anilox.situacao || 'EM USO';
                     const situacaoClass = situacao === 'EM USO' ? 'em-uso' : 'em-regravacao';
+
+                    // Count washes and measurements in period
+                    const washCountInPeriod = anilox.lavagens.filter(w => new Date(w + 'T12:00:00Z') >= periodStart).length;
+                    const measurementCountInPeriod = anilox.historico.filter(h => new Date(h.data + 'T12:00:00Z') >= periodStart).length;
+                    const totalWashCount = anilox.lavagens.length;
+
                     const row = document.createElement('tr');
                     row.innerHTML = `
                         <td><strong>${anilox.id}</strong></td>
@@ -621,6 +641,8 @@
                         <td>${!isNaN(life) ? life.toFixed(1) + '%' : 'N/A'}</td> <td>${anilox.lineatura}</td>
                         <td class="estado-cell">${estadoHtml}</td>
                         <td><button class="situacao-badge ${situacaoClass}" onclick="toggleSituacao('${anilox.id}')">${situacao}</button></td>
+                        <td><a href="#" onclick="event.preventDefault(); showWashHistory('${anilox.id}')" style="font-weight:700; color: var(--primary); text-decoration: none; cursor: pointer;" title="Clique para ver todas as lavagens">${washCountInPeriod} <span style="font-size:0.7rem; color: var(--text-light);">(${totalWashCount} total)</span></a></td>
+                        <td style="font-weight:700;">${measurementCountInPeriod}</td>
                         <td>${lastActivityDateFormatted}</td> <td>${volStatusBadge}</td> <td>${washStatusBadge}</td>
                         <td>
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin-bottom: 4px;">
@@ -651,6 +673,25 @@
             document.getElementById('bcmAtualInput').value = '';
             document.getElementById('measurementDate').valueAsDate = new Date();
             ui.openModal('addMeasurementModal');
+        }
+
+        function showWashHistory(id) {
+            const anilox = aniloxData.find(a => a.id === id);
+            if (!anilox) return;
+            const sortedWashes = [...anilox.lavagens].sort().reverse();
+            let listHTML = '';
+            if (sortedWashes.length === 0) {
+                listHTML = '<p class="placeholder">Nenhuma lavagem registrada.</p>';
+            } else {
+                listHTML = '<div style="max-height: 400px; overflow-y: auto;"><table style="width:100%"><thead><tr><th>#</th><th>Data da Lavagem</th></tr></thead><tbody>';
+                sortedWashes.forEach((w, i) => {
+                    const dateFormatted = new Date(w + 'T12:00:00Z').toLocaleDateString('pt-BR', {timeZone: 'UTC'});
+                    listHTML += `<tr><td>${i + 1}</td><td>${dateFormatted}</td></tr>`;
+                });
+                listHTML += '</tbody></table></div>';
+            }
+            document.getElementById('washHistoryModal').innerHTML = `<div class="modal-content" style="max-width: 500px;"><div class="modal-header"><h2>Lavagens do Anilox Nº ${anilox.id} (${sortedWashes.length} total)</h2><span class="close-button" onclick="ui.closeModal('washHistoryModal')">&times;</span></div><div class="modal-body">${listHTML}</div></div>`;
+            ui.openModal('washHistoryModal');
         }
 
         function openEditModal(id) {
@@ -825,10 +866,12 @@
             window.deleteAnilox = deleteAnilox;
             window.toggleSituacao = toggleSituacao;
             window.printReport = printReport;
+            window.showWashHistory = showWashHistory;
 
             // --- Event Listeners ---
             document.getElementById('searchInput').addEventListener('input', render.table);
             document.getElementById('situacaoFilter').addEventListener('change', render.table);
+            document.getElementById('periodFilter').addEventListener('change', render.table);
 
             document.getElementById('saveSettingsBtn').addEventListener('click', (e) => ui.handleFormSubmit(e.currentTarget, async () => {
                 const newSettings = {
